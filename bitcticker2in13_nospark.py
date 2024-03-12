@@ -211,7 +211,7 @@ def updateDisplay(config,pricestack,whichcoin,fiat,other):
         draw.text((135,100),symbolstring+pricenowstring,font =fontHorizontal,fill = 0)
         if other['ATH']==True:
             image.paste(ATHbitmap,(190,85))
-        image.paste(sparkbitmap,(80,25))
+ #      image.paste(sparkbitmap,(80,25))
         image.paste(tokenimage, (0,10))
  #       draw.text((5,110),"In retrospect, it was inevitable",font =font_date,fill = 0)
         draw.text((95,1),str(time.strftime("%H:%M %a %d %b %Y")),font =font_date,fill = 0)
