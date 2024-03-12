@@ -7,7 +7,7 @@ import os
 import sys
 import logging
 import RPi.GPIO as GPIO
-from waveshare_epd import epd2in13_V2
+from waveshare_epd import epd2in13_V4
 import time
 import requests
 import urllib, json
@@ -105,15 +105,15 @@ def getData(config,whichcoin,fiat,other):
 def beanaproblem(message):
 #   A visual cue that the wheels have fallen off
     thebean = Image.open(os.path.join(picdir,'thebean.bmp'))
-    epd = epd2in13_V2.EPD()
-    epd.init(epd.FULL_UPDATE)
+    epd = epd2in13_V4.EPD()
+    epd.init()
     image = Image.new('L', (epd.height, epd.width), 255)    # 255: clear the image with white
     draw = ImageDraw.Draw(image)
     image.paste(thebean, (60,15))
     draw.text((15,150),message, font=font_date,fill = 0)
     image = ImageOps.mirror(image)
     epd.display(epd.getbuffer(image))
-    logging.info("epd2in13_V2 BTC Frame")
+    logging.info("epd2in13_V4 BTC Frame")
 #   Reload last good config.yaml
     with open(configfile) as f:
         config = yaml.load(f, Loader=yaml.FullLoader)
@@ -184,8 +184,8 @@ def updateDisplay(config,pricestack,whichcoin,fiat,other):
         pricenowstring =str(float('%.5g' % pricenow))
 
     if config['display']['orientation'] == 0 or config['display']['orientation'] == 180 :
-        epd = epd2in13_V2.EPD()
-        epd.init(epd.FULL_UPDATE)
+        epd = epd2in13_V4.EPD()
+        epd.init()
         image = Image.new('L', (epd.width, epd.height), 255)    # 255: clear the image with white
         draw = ImageDraw.Draw(image)              
         draw.text((110,80),str(days_ago)+"day :",font =font_date,fill = 0)
@@ -200,8 +200,8 @@ def updateDisplay(config,pricestack,whichcoin,fiat,other):
 
 
     if config['display']['orientation'] == 90 or config['display']['orientation'] == 270 :
-        epd = epd2in13_V2.EPD()
-        epd.init(epd.FULL_UPDATE)
+        epd = epd2in13_V4.EPD()
+        epd.init()
         image = Image.new('L', (epd.height, epd.width), 255)    # 255: clear the image with white
         draw = ImageDraw.Draw(image)   
         draw.text((135,85),str(days_ago)+" day : "+pricechange,font =font_date,fill = 0)
@@ -276,7 +276,7 @@ def main():
     logging.basicConfig(level=logging.DEBUG)
 
     try:
-        logging.info("epd2in13_V2 BTC Frame")
+        logging.info("epd2in13_V4 BTC Frame")
 #       Get the configuration from config.yaml
         with open(configfile) as f:
             config = yaml.load(f, Loader=yaml.FullLoader)
@@ -357,7 +357,7 @@ def main():
     
     except KeyboardInterrupt:    
         logging.info("ctrl + c:")
-        epd2in13_V2.epdconfig.module_exit()
+        epd2in13_V4.epdconfig.module_exit()
         GPIO.cleanup()
         exit()
 
