@@ -1,3 +1,5 @@
+## UPDATE WITH COPY FROM DEVICE
+
 #!/usr/bin/python3
 from PIL import Image, ImageOps
 from PIL import ImageFont
