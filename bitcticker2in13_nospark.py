@@ -1,5 +1,3 @@
-## UPDATE WITH COPY FROM DEVICE
-
 #!/usr/bin/python3
 from PIL import Image, ImageOps
 from PIL import ImageFont
@@ -17,7 +15,7 @@ import matplotlib as mpl
 mpl.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
-import yaml 
+import yaml
 import socket
 picdir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'images')
 fontdir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'fonts/googlefonts')
@@ -55,18 +53,18 @@ def getData(config,whichcoin,fiat,other):
     The function to update the ePaper display. There are two versions of the layout. One for portrait aspect ratio, one for landscape.
     """
     logging.info("Getting Data")
-    days_ago=int(config['ticker']['sparklinedays'])   
+    days_ago=int(config['ticker']['sparklinedays'])
     endtime = int(time.time())
     starttime = endtime - 60*60*24*days_ago
     starttimeseconds = starttime
-    endtimeseconds = endtime     
-    # Get the price 
+    endtimeseconds = endtime
+    # Get the price
 
     if config['ticker']['exchange']=='default' or fiat!='usd':
         geckourl = "https://api.coingecko.com/api/v3/coins/markets?vs_currency="+fiat+"&ids="+whichcoin
         logging.info(geckourl)
         rawlivecoin = requests.get(geckourl).json()
-        logging.info(rawlivecoin[0])   
+        logging.info(rawlivecoin[0])
         liveprice = rawlivecoin[0]
         pricenow= float(liveprice['current_price'])
         alltimehigh = float(liveprice['ath'])
@@ -123,7 +121,7 @@ def beanaproblem(message):
 def makeSpark(pricestack):
     # Draw and save the sparkline that represents historical data
 
-    # Subtract the mean from the sparkline to make the mean appear on the plot (it's really the x axis)    
+    # Subtract the mean from the sparkline to make the mean appear on the plot (it's really the x axis)
     x = pricestack-np.mean(pricestack)
 
     fig, ax = plt.subplots(1,1,figsize=(10,3))
@@ -141,18 +139,18 @@ def makeSpark(pricestack):
     plt.savefig(os.path.join(picdir,'spark.png'), dpi=20)
     imgspk = Image.open(os.path.join(picdir,'spark.png'))
     file_out = os.path.join(picdir,'spark.bmp')
-    imgspk.save(file_out) 
+    imgspk.save(file_out)
     plt.clf() # Close plot to prevent memory error
     ax.cla() # Close axis to prevent memory error
     plt.close(fig) # Close plot
 
 def updateDisplay(config,pricestack,whichcoin,fiat,other):
-    """   
+    """
     Takes the price data, the desired coin/fiat combo along with the config info for formatting
     if config is re-written following adustment we could avoid passing the last two arguments as
-    they will just be the first two items of their string in config 
+    they will just be the first two items of their string in config
     """
-    days_ago=int(config['ticker']['sparklinedays'])   
+    days_ago=int(config['ticker']['sparklinedays'])
     symbolstring=currency.symbol(fiat.upper())
     if fiat=="jpy" or fiat=="cny":
         symbolstring="¥"
@@ -173,7 +171,7 @@ def updateDisplay(config,pricestack,whichcoin,fiat,other):
         resize = 100,100
         tokenimage.thumbnail(resize, Image.ANTIALIAS)
         new_image = Image.new("RGBA", (120,120), "WHITE") # Create a white rgba background with a 10 pixel border
-        new_image.paste(tokenimage, (10, 10), tokenimage)   
+        new_image.paste(tokenimage, (10, 10), tokenimage)
         tokenimage=new_image
         tokenimage.thumbnail((100,100),Image.ANTIALIAS)
         tokenimage.save(tokenfilename)
@@ -189,7 +187,7 @@ def updateDisplay(config,pricestack,whichcoin,fiat,other):
         epd = epd2in13_V4.EPD()
         epd.init()
         image = Image.new('L', (epd.width, epd.height), 255)    # 255: clear the image with white
-        draw = ImageDraw.Draw(image)              
+        draw = ImageDraw.Draw(image)
         draw.text((110,80),str(days_ago)+"day :",font =font_date,fill = 0)
         draw.text((110,95),pricechange,font =font_date,fill = 0)
         # Print price to 5 significant figures
@@ -205,12 +203,12 @@ def updateDisplay(config,pricestack,whichcoin,fiat,other):
         epd = epd2in13_V4.EPD()
         epd.init()
         image = Image.new('L', (epd.height, epd.width), 255)    # 255: clear the image with white
-        draw = ImageDraw.Draw(image)   
+        draw = ImageDraw.Draw(image)
         draw.text((135,85),str(days_ago)+" day : "+pricechange,font =font_date,fill = 0)
 
  #.     uncomment the line below to show volume
  #       draw.text((110,105),"24h vol : " + human_format(other['volume']),font =font_date,fill = 0)
-        draw.text((135,100),symbolstring+pricenowstring,font =fontHorizontal,fill = 0)
+        draw.text((100,30),symbolstring+pricenowstring,font =font,fill = 0)
         if other['ATH']==True:
             image.paste(ATHbitmap,(190,85))
  #      image.paste(sparkbitmap,(80,25))
@@ -222,10 +220,10 @@ def updateDisplay(config,pricestack,whichcoin,fiat,other):
 #       This is a hack to deal with the mirroring that goes on in 4Gray Horizontal
 #        image = ImageOps.mirror(image)
 
-#   If the display is inverted, invert the image usinng ImageOps        
+#   If the display is inverted, invert the image usinng ImageOps
     if config['display']['inverted'] == True:
         image = ImageOps.invert(image)
-#   Send the image to the screen        
+#   Send the image to the screen
     epd.display(epd.getbuffer(image))
 #    epd.sleep()
 
@@ -238,15 +236,15 @@ def currencystringtolist(currstring):
 def currencycycle(curr_list):
     # Rotate the array of currencies from config.... [a b c] becomes [b c a]
     curr_list = curr_list[1:]+curr_list[:1]
-    return curr_list    
+    return curr_list
 
 def main():
-    
+
     def fullupdate():
-        """  
+        """
         The steps required for a full update of the display
         Earlier versions of the code didn't grab new data for some operations
-        but the e-Paper is too slow to bother the coingecko API 
+        but the e-Paper is too slow to bother the coingecko API
         """
         other={}
         try:
@@ -265,15 +263,15 @@ def main():
         return lastgrab
 
     def configwrite():
-        """  
+        """
         Write the config file following an adjustment made using the buttons
-        This is so that the unit returns to its last state after it has been 
-        powered off 
-        """ 
+        This is so that the unit returns to its last state after it has been
+        powered off
+        """
         config['ticker']['currency']=",".join(crypto_list)
         config['ticker']['fiatcurrency']=",".join(fiat_list)
         with open(configfile, 'w') as f:
-            data = yaml.dump(config, f)    
+            data = yaml.dump(config, f)
 
     logging.basicConfig(level=logging.DEBUG)
 
@@ -286,10 +284,10 @@ def main():
         config['display']['orientation']=int(config['display']['orientation'])
 
         crypto_list = currencystringtolist(config['ticker']['currency'])
-        logging.info(crypto_list) 
+        logging.info(crypto_list)
 
         fiat_list=currencystringtolist(config['ticker']['fiatcurrency'])
-        logging.info(fiat_list) 
+        logging.info(fiat_list)
 
         CURRENCY=crypto_list[0]
         FIAT=fiat_list[0]
@@ -311,10 +309,10 @@ def main():
 
 
 #       Note that there has been no data pull yet
-        datapulled=False 
+        datapulled=False
 #       Time of start
         lastcoinfetch = time.time()
-     
+
         while True:
 
             key1state = GPIO.input(key1)
@@ -356,8 +354,8 @@ def main():
 
     except IOError as e:
         logging.info(e)
-    
-    except KeyboardInterrupt:    
+
+    except KeyboardInterrupt:
         logging.info("ctrl + c:")
         epd2in13_V4.epdconfig.module_exit()
         GPIO.cleanup()
